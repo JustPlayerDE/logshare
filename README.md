@@ -48,7 +48,7 @@ To Support your addon, you need to register it with the uploader. This is done b
 ```lua
 hook.Add("LogUploader.Register", "A hook name that should be unique to your addon", function(LogUploader)
     LogUploader.Register("Your Addon Name", {
-        workshopId = "Your Workshop or Gmodstore ID",
+        itemId = "Your Workshop or Gmodstore ID",
         version = "1.0.0",
         branch = "release", -- optional, defaults to "release" or "workshop" or "master" depending on the type
         author = "Your Name",
