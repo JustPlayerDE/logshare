@@ -52,7 +52,8 @@ hook.Add("LogUploader.Register", "A hook name that should be unique to your addo
         version = "1.0.0",
         branch = "release", -- optional, defaults to "release" or "workshop" or "master" depending on the type
         author = "Your Name",
-        type = "gmodstore"
+        type = "gmodstore",
+        description = "A description of your addon, this can be multiple lines and will be displayed if the user clicks on your addon on the log viewer",
     })
 end)
 ```
