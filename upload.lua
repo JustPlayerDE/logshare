@@ -184,6 +184,7 @@ local function xwwwformurlencodedrecursive(tbl, prefix)
 end
 
 timer.Simple(5, function()
+    log("Fetching server info...")
     local output = LogUploader.GenerateOutput()
     local json = util.TableToJSON(output)
 
