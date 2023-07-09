@@ -18,7 +18,7 @@ Because of how untrusted external Lua is, this script is hosted on github and is
 
 The uploader will upload the following:
 
-* The server log file (if it exists: `garrysmod/console.log`)
+* ~~The server log file (if it exists: `garrysmod/console.log`)~~ (not yet)
 * Server Meta Data
   * Server OS
   * Server Name
@@ -35,11 +35,11 @@ The uploader will upload the following:
 
 The uploader will then return a URL that you can share with others to view the uploaded data.
 
-Uploaded data is stored for 7 days and then fully removed.
+Uploaded data is stored for 7 days and then fully removed. After upload you can not submit any more for 20 minutes.
 
 Please note that everything is uploaded anonymously and no personal data is collected.
 
-You may have to add `-condebug` to your launch options to get the server log file.
+~~You may have to add `-condebug` to your launch options to get the server log file.~~
 
 ## Supported Addons
 
