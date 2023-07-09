@@ -41,6 +41,8 @@ Please note that everything is uploaded anonymously and no personal data is coll
 
 ~~You may have to add `-condebug` to your launch options to get the server log file.~~
 
+> Depending on how much this is used i may improve the addon detection, for now it stays very basic.
+
 ## Supported Addons
 
 To Support your addon, you need to register it with the uploader. This is done by adding the following to your addon:
