@@ -183,6 +183,7 @@ local function xwwwformurlencodedrecursive(tbl, prefix)
     return str
 end
 
+log("Waiting 5 seconds...")
 timer.Simple(5, function()
     log("Fetching server info...")
     local output = LogUploader.GenerateOutput()
