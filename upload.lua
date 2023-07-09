@@ -178,7 +178,7 @@ timer.Simple(5, function()
     log("Uploading server info...")
 
     -- send json blob to server
-    http.Post("https://tools.justplayer.de/logs/uploader.php", {
+    http.Post("https://logs.justplayer.de", {
         json = urlencode(json)
     }, function(body, len, headers, code)
         if code == 200 then
