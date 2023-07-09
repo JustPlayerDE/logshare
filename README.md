@@ -60,7 +60,7 @@ end)
 
 The `type` can be one of the following:
 
-* `gmodstore` - Gmodstore Addons
+* `gmodstore` - Gmodstore Addons (only if they register themself as such)
 * `git` - Git based Addons
 * `workshop` - Workshop Addons which are supported
   * `workshop_mounted` - Mounted Unsupported Workshop Addons
