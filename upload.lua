@@ -63,15 +63,6 @@ local function getAverageTickrate()
     return math.floor(ticksPerSecond * 100) / 100
 end
 
-hook.Add("LogUploader.Register", "Test", function(LogUploader)
-    LogUploader.Register("test", {
-        itemId = 104482086,
-        version = "1.0.0",
-        author = "Test Author",
-        type = "gmodstore"
-    })
-end)
-
 -- get supported server addons
 local LogUploader = {}
 LogUploader.Addons = {}
@@ -196,6 +187,8 @@ timer.Simple(5, function()
     local output = LogUploader.GenerateOutput()
     local json = util.TableToJSON(output)
 
+    log("Uploading server info...")
+
     -- send json blob to server
     http.Post("https://tools.justplayer.de/logs/uploader.php", {
         json = urlencode(json)
@@ -210,35 +203,3 @@ timer.Simple(5, function()
         log("Failed to upload server info to LogUploader! (Error: %s)", err)
     end)
 end)
---logDebug("Generated output: %s", json)
---[[
-timer.Simple(5, function()
-    -- print all info we got
-    log("Server OS: %s", serverOs)
-    log("Server IP: %s", gameIP or "localhost")
-    log("Server Name: %s", gameName)
-    log("Server Gamemode: %s", gameMode)
-    log("Server Gamemode Base: %s", gameModeBase)
-    log("Server Map: %s", gameMap)
-    log("Server Uptime: %i", gameCurrentTime)
-    print("")
-    log("Server Players: %i", gamePlayers)
-    log("Server Average Ping: %i", getAveragePing())
-    log("Server Tickrate: %i", gameSetTickrate)
-    log("Server Average Tickrate: %i", getAverageTickrate())
-    log("Server Addons: %i", #LogUploader.Addons)
-    print("")
-    -- [[
-    for i = 1, #LogUploader.Addons do
-        local addon = LogUploader.Addons[i]
-        log("Addon: %s (%s)", addon.name, addon.type)
-        log("Addon Version: %s", addon.version)
-        log("Addon Author: %s", addon.author)
-        log("Addon Item ID: %s", addon.itemId ~= false and addon.itemId or "N/A")
-    end
-    --] ]
-    -- cleanup
-    hook.Remove("Think", "LogUploader")
-    LogUploader = nil
-end)
---]]
