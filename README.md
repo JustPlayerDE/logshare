@@ -10,7 +10,7 @@ The Uploader script is hosted on github and is open source so you can see what i
 
 To use the uploader, simply run the following command in your server console:
 
-`lua_run http.Fetch("https://raw.githubusercontent.com/JustPlayerDE/<todo>/master/uploader.lua", function(body) RunString(body) end)`
+`lua_run http.Fetch("https://raw.githubusercontent.com/JustPlayerDE/logshare/master/upload.lua", function(body) RunString(body) end)`
 
 Because of how untrusted external Lua is, this script is hosted on github and is open source so you can see what it does and how it works before running it.
 
