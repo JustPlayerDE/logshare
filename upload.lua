@@ -169,20 +169,6 @@ function LogUploader.GenerateOutput()
     return output
 end
 
-local function xwwwformurlencodedrecursive(tbl, prefix)
-    local str = ""
-
-    for k, v in pairs(tbl) do
-        if type(v) == "table" then
-            str = str .. xwwwformurlencodedrecursive(v, prefix and prefix .. "[" .. k .. "]" or k)
-        else
-            str = str .. (prefix and prefix .. "[" .. k .. "]" or k) .. "=" .. v .. "&"
-        end
-    end
-
-    return str
-end
-
 log("Waiting 5 seconds...")
 timer.Simple(5, function()
     log("Fetching server info...")
