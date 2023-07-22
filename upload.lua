@@ -97,7 +97,7 @@ LogUploader.Register = function(name, data, no_log)
     end
 
     local addonType = addonData.type
-    
+
     if mergedTypes[addonType] then
         addonType = mergedTypes[addonData.type]
     else
@@ -108,9 +108,13 @@ LogUploader.Register = function(name, data, no_log)
         addonData.branch = nil
     end
 
-    if not LogUploader.Addons then LogUploader.Addons = {} end
-    if not LogUploader.Addons[addonType] then LogUploader.Addons[addonType] = {} end
+    if not LogUploader.Addons then
+        LogUploader.Addons = {}
+    end
 
+    if not LogUploader.Addons[addonType] then
+        LogUploader.Addons[addonType] = {}
+    end
 
     -- set anything [unknown] to nil
     for k, v in pairs(addonData) do
@@ -332,8 +336,14 @@ timer.Simple(5, function()
         if code == 200 then
             log("Successfully uploaded server info to LogUploader!")
             log("URL (may contain sensitive info, do not share with anyone that could abuse it): %s", body)
+        elseif code == 429 then
+            log("Failed to upload server info to LogUploader! Rate limit reached, next request available in %s seconds.", headers["Retry-After"])
         else
             log("Failed to upload server info to LogUploader! (Code: %i)", code)
+
+            if body:len() > 0 then
+                log("Error: %s", body)
+            end
         end
     end, function(err)
         log("Failed to upload server info to LogUploader! (Error: %s)", err)
