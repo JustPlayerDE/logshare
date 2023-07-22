@@ -130,18 +130,16 @@ for name, addon in pairs(fileSystemAddonDirectories) do
         -- this breaks stuff like 3.2 as it has rounding errors when converting to a number
         local addontxt = file.Open("addons/" .. addon .. "/addon.txt", "r", "GAME")
         local addonData = {}
-
         local i = 0 -- just to be safe, dont want to get stuck in an infinite loop
+
         while true do
             if i > 100 then break end -- just to be safe
             i = i + 1
             local line = addontxt:ReadLine()
             if not line then break end
-
             -- check if line is a comment
-            if string.StartWith( string.Trim(line), "#") then continue end
-            if string.StartWith( string.Trim(line), "//") then continue end
-
+            if string.StartWith(string.Trim(line), "#") then continue end
+            if string.StartWith(string.Trim(line), "//") then continue end
             -- get key and value
             local key, value = string.match(line, "\"([^\"]+)\"%s+\"([^\"]+)\"")
             if not key or not value then continue end
@@ -150,6 +148,7 @@ for name, addon in pairs(fileSystemAddonDirectories) do
         end
 
         addontxt:Close()
+
         addoninfo = {
             name = addonData.name,
             author = addonData.author_name,
@@ -183,7 +182,7 @@ for name, addon in pairs(fileSystemAddonDirectories) do
     end
 
     LogUploader.Register(addoninfo.name or addon, {
-        type =  addoninfo.type or "filesystem",
+        type = addoninfo.type or "filesystem",
         author = addoninfo.author,
         version = addoninfo.version,
         branch = addoninfo.branch
@@ -231,11 +230,11 @@ function LogUploader.GenerateOutput()
 end
 
 log("Waiting 5 seconds...")
+
 timer.Simple(5, function()
     log("Fetching server info...")
     local output = LogUploader.GenerateOutput()
     local json = util.TableToJSON(output)
-
     log("Uploading server info...")
 
     -- send json blob to server
