@@ -81,8 +81,8 @@ LogUploader.Register = function(name, data, no_log)
         itemId = (data.itemId and data.itemId) or nil,
         version = data.version or "[unknown]",
         author = data.author or "[unknown]",
-        type = data.type or "unknown",
-        branch = (data.branch and data.branch) or (data.type and typeDefaultBranch[data.type] or "unknown")
+        type = data.type or "[unknown]",
+        branch = (data.branch and data.branch) or (data.type and typeDefaultBranch[data.type] or "[unknown]")
     }
 
     if not no_log then
