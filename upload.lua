@@ -321,9 +321,7 @@ function LogUploader.GenerateOutput()
     return output
 end
 
-log("Waiting 5 seconds...")
-
-timer.Simple(5, function()
+function LogUploader.Init()
     log("Fetching server info...")
     local output = LogUploader.GenerateOutput()
     local json = util.TableToJSON(output)
@@ -348,4 +346,11 @@ timer.Simple(5, function()
     end, function(err)
         log("Failed to upload server info to LogUploader! (Error: %s)", err)
     end)
-end)
+end
+
+if string.find(debug.getinfo(1, "S").source, "@lua_run") then
+    -- we are run via console, automatically run LogUploader.Init after 5 seconds
+    log("Waiting 5 seconds...")
+    timer.Simple(5, LogUploader.Init)
+end
+-- otherwise we are loaded for libgmodstore, wait for user to call log uploader.
