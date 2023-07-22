@@ -91,8 +91,10 @@ LogUploader.Register = function(name, data, no_log)
 
     if not LogUploader.Addons then LogUploader.Addons = {} end
     if not LogUploader.Addons[addonData.type] then LogUploader.Addons[addonData.type] = {} end
+    local addonType = addonData.type
+    addonData.type = nil -- remove type from addonData, we dont need it anymore and it would just waste space
 
-    table.insert(LogUploader.Addons[addonData.type], addonData)
+    table.insert(LogUploader.Addons[addonType], addonData)
 end
 
 --hook.Run("LogUploader.Register", LogUploader)
