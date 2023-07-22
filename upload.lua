@@ -104,7 +104,7 @@ LogUploader.Register = function(name, data, no_log)
         addonData.type = nil
     end
 
-    if addonData.type == "workshop" then
+    if addonType == "workshop" then
         addonData.branch = nil
     end
 
