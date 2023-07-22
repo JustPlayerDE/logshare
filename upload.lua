@@ -321,7 +321,7 @@ function LogUploader.GenerateOutput()
     return output
 end
 
-function LogUploader.Init()
+function LogUploader.Init(callback)
     log("Fetching server info...")
     local output = LogUploader.GenerateOutput()
     local json = util.TableToJSON(output)
@@ -334,17 +334,22 @@ function LogUploader.Init()
         if code == 200 then
             log("Successfully uploaded server info to LogUploader!")
             log("URL (may contain sensitive info, do not share with anyone that could abuse it): %s", body)
+            if callback then callback(true, body) end
         elseif code == 429 then
             log("Failed to upload server info to LogUploader! Rate limit reached, next request available in %s seconds.", headers["Retry-After"])
+            if callback then callback(false, "Rate limit reached, next request available in " .. headers["Retry-After"] .. " seconds.") end
         else
             log("Failed to upload server info to LogUploader! (Code: %i)", code)
 
             if body:len() > 0 then
                 log("Error: %s", body)
             end
+
+            if callback then callback(false, "Status Code: " .. code .. (body:len() > 0 and "\nReason: " .. body or "")) end
         end
     end, function(err)
         log("Failed to upload server info to LogUploader! (Error: %s)", err)
+        if callback then callback(false, "Error: " .. err) end
     end)
 end
 
