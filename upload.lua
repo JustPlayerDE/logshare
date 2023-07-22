@@ -92,7 +92,7 @@ LogUploader.Register = function(name, data, no_log)
     table.insert(LogUploader.Addons, addonData)
 end
 
-hook.Run("LogUploader.Register", LogUploader)
+--hook.Run("LogUploader.Register", LogUploader)
 -- add workshop addons 
 local workshopAddons = engine.GetAddons()
 
