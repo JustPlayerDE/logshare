@@ -122,10 +122,71 @@ local _, fileSystemAddonDirectories = file.Find("addons/*", "GAME")
 for name, addon in pairs(fileSystemAddonDirectories) do
     -- check if addon contains "lua" folder
     if not file.Exists("addons/" .. addon .. "/lua", "GAME") then continue end
-    logDebug("Found FileSystem addon: %s", addon)
+    local addoninfo = {}
 
-    LogUploader.Register(addon, {
-        type = "filesystem"
+    -- addon.txt is not required, but if it exists, we can get the name, author and version from it
+    if file.Exists("addons/" .. addon .. "/addon.txt", "GAME") then
+        -- i decided to not use util.KeyValuesToTable because it tries to convert values to numbers if possible
+        -- this breaks stuff like 3.2 as it has rounding errors when converting to a number
+        local addontxt = file.Open("addons/" .. addon .. "/addon.txt", "r", "GAME")
+        local addonData = {}
+
+        local i = 0 -- just to be safe, dont want to get stuck in an infinite loop
+        while true do
+            if i > 100 then break end -- just to be safe
+            i = i + 1
+            local line = addontxt:ReadLine()
+            if not line then break end
+
+            -- check if line is a comment
+            if string.StartWith( string.Trim(line), "#") then continue end
+            if string.StartWith( string.Trim(line), "//") then continue end
+
+            -- get key and value
+            local key, value = string.match(line, "\"([^\"]+)\"%s+\"([^\"]+)\"")
+            if not key or not value then continue end
+            -- add to table
+            addonData[key] = value
+        end
+
+        addontxt:Close()
+        addoninfo = {
+            name = addonData.name,
+            author = addonData.author_name,
+            version = addonData.version
+        }
+    end
+
+    -- get info from git if it exists
+    -- This will overwrite the informations we got from addon.txt, but git should be more accurate
+    if file.Exists("addons/" .. addon .. "/.git/HEAD", "GAME") then
+        local gitHead = file.Open("addons/" .. addon .. "/.git/HEAD", "r", "GAME")
+        local branch = gitHead:ReadLine()
+        gitHead:Close()
+
+        if string.StartWith(branch, "ref: refs/heads/") then
+            addoninfo.branch = string.sub(branch, 17):Trim()
+            addoninfo.type = "git"
+        end
+
+        if addoninfo.branch and file.Exists("addons/" .. addon .. "/.git/refs/heads/" .. addoninfo.branch, "GAME") then
+            local gitHead = file.Open("addons/" .. addon .. "/.git/refs/heads/" .. addoninfo.branch, "r", "GAME")
+            addoninfo.version = gitHead:ReadLine():Trim()
+            gitHead:Close()
+        end
+    end
+
+    if addoninfo.name then
+        logDebug("Found FileSystem addon: %s (%s)", addoninfo.name or addon, addon)
+    else
+        logDebug("Found FileSystem addon: %s", addon)
+    end
+
+    LogUploader.Register(addoninfo.name or addon, {
+        type =  addoninfo.type or "filesystem",
+        author = addoninfo.author,
+        version = addoninfo.version,
+        branch = addoninfo.branch
     }, true)
 end
 
