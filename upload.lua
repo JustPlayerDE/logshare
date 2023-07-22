@@ -89,117 +89,174 @@ LogUploader.Register = function(name, data, no_log)
         logDebug("Found Supported addon: %s, version: %s, branch: %s, type: %s", addonData.name, addonData.version, addonData.branch, addonData.type)
     end
 
-    table.insert(LogUploader.Addons, addonData)
+    if not LogUploader.Addons then LogUploader.Addons = {} end
+    if not LogUploader.Addons[addonData.type] then LogUploader.Addons[addonData.type] = {} end
+
+    table.insert(LogUploader.Addons[addonData.type], addonData)
 end
 
 --hook.Run("LogUploader.Register", LogUploader)
--- add workshop addons 
-local workshopAddons = engine.GetAddons()
+-- libgmodstore support
+local libgmodstoreAddons = {}
 
-for i = 1, #workshopAddons do
-    local addon = workshopAddons[i]
+do
+    -- because we also need the path of the addon, we need to call the hook
+    local oldInitScript = libgmodstore and libgmodstore.InitScript
 
-    -- check if addon is not already added
-    for i = 1, #LogUploader.Addons do
-        if tonumber(LogUploader.Addons[i].itemId) == tonumber(addon.wsid) then
-            logDebug("Found Supported Workshop addon: %i (%s)", addon.wsid, LogUploader.Addons[i].name)
-            continue
-        end
-    end
+    libgmodstore.InitScript = function(self, script_id, script_name, options)
+        if (script_name or ""):Trim():len() == 0 then return false end
 
-    --logDebug("Found Workshop addon: %i (%s)", addon.wsid, addon.title)
-    LogUploader.Register(addon.title, {
-        itemId = addon.wsid, -- Workshop only
-        version = addon.updated,
-        type = "workshop_" .. (addon.mounted and "mounted" or "unmounted")
-    }, true)
-end
-
--- add filesystem addons in /addons/
-local _, fileSystemAddonDirectories = file.Find("addons/*", "GAME")
-
--- check gma first
-for name, addon in pairs(fileSystemAddonDirectories) do
-    -- check if addon contains "lua" folder
-    if not file.Exists("addons/" .. addon .. "/lua", "GAME") then continue end
-    local addoninfo = {}
-
-    -- addon.txt is not required, but if it exists, we can get the name, author and version from it
-    if file.Exists("addons/" .. addon .. "/addon.txt", "GAME") then
-        -- i decided to not use util.KeyValuesToTable because it tries to convert values to numbers if possible
-        -- this breaks stuff like 3.2 as it has rounding errors when converting to a number
-        local addontxt = file.Open("addons/" .. addon .. "/addon.txt", "r", "GAME")
-        local addonData = {}
-        local i = 0 -- just to be safe, dont want to get stuck in an infinite loop
-
-        while true do
-            if i > 100 then break end -- just to be safe
-            i = i + 1
-            local line = addontxt:ReadLine()
-            if not line then break end
-            -- check if line is a comment
-            if string.StartWith(string.Trim(line), "#") then continue end
-            if string.StartWith(string.Trim(line), "//") then continue end
-            -- get key and value
-            local key, value = string.match(line, "\"([^\"]+)\"%s+\"([^\"]+)\"")
-            if not key or not value then continue end
-            -- add to table
-            addonData[key] = value
+        if not isstring(script_id) then
+            logDebug("[" .. script_id .. "] " .. script_name .. " is using deprecated id, update notifications will not work.")
         end
 
-        addontxt:Close()
+        logDebug("[" .. script_id .. "] " .. script_name .. " is using libgmodstore")
+        -- get directory of addon we are called frrom, this could be improved but it works for now
+        local addonDirectory = debug.getinfo(2, "S").source:sub(2):match("(.*/)") or ""
+        addonDirectory = addonDirectory:gsub("addons/", "")
+        addonDirectory = addonDirectory:match("([^/]+)/") or addonDirectory
 
-        addoninfo = {
-            name = addonData.name,
-            author = addonData.author_name,
-            version = addonData.version
+        libgmodstoreAddons[addonDirectory] = {
+            script_id = script_id,
+            script_name = script_name,
+            options = options
         }
+
+        return true
     end
 
-    -- get info from git if it exists
-    -- This will overwrite the informations we got from addon.txt, but git should be more accurate
-    if file.Exists("addons/" .. addon .. "/.git/HEAD", "GAME") then
-        local gitHead = file.Open("addons/" .. addon .. "/.git/HEAD", "r", "GAME")
-        local branch = gitHead:ReadLine()
-        gitHead:Close()
-
-        if string.StartWith(branch, "ref: refs/heads/") then
-            addoninfo.branch = string.sub(branch, 17):Trim()
-            addoninfo.type = "git"
-        end
-
-        if addoninfo.branch and file.Exists("addons/" .. addon .. "/.git/refs/heads/" .. addoninfo.branch, "GAME") then
-            local gitHead = file.Open("addons/" .. addon .. "/.git/refs/heads/" .. addoninfo.branch, "r", "GAME")
-            addoninfo.version = gitHead:ReadLine():Trim()
-            gitHead:Close()
-        end
-    end
-
-    if addoninfo.name then
-        logDebug("Found FileSystem addon: %s (%s)", addoninfo.name or addon, addon)
-    else
-        logDebug("Found FileSystem addon: %s", addon)
-    end
-
-    LogUploader.Register(addoninfo.name or addon, {
-        type = addoninfo.type or "filesystem",
-        author = addoninfo.author,
-        version = addoninfo.version,
-        branch = addoninfo.branch
-    }, true)
+    -- run hook 
+    hook.Run("libgmodstore_init")
+    -- reset libgmodstore.InitScript
+    libgmodstore.InitScript = oldInitScript
 end
 
--- check lua modules
-local moduleAddons, _ = file.Find("lua/bin/*", "GAME")
+do
+    -- add workshop addons 
+    local workshopAddons = engine.GetAddons()
 
-for name, addon in pairs(moduleAddons) do
-    -- check if file is a module (ends with .dll or .so)
-    if not string.EndsWith(addon, ".dll") and not string.EndsWith(addon, ".so") then continue end
-    logDebug("Found Module addon: %s", addon)
+    for i = 1, #workshopAddons do
+        local addon = workshopAddons[i]
 
-    LogUploader.Register(addon, {
-        type = "module"
-    }, true)
+        -- check if addon is not already added
+        for i = 1, #LogUploader.Addons do
+            if tonumber(LogUploader.Addons[i].itemId) == tonumber(addon.wsid) then
+                logDebug("Found Supported Workshop addon: %i (%s)", addon.wsid, LogUploader.Addons[i].name)
+                continue
+            end
+        end
+
+        --logDebug("Found Workshop addon: %i (%s)", addon.wsid, addon.title)
+        LogUploader.Register(addon.title, {
+            itemId = addon.wsid, -- Workshop only
+            version = addon.updated,
+            type = "workshop_" .. (addon.mounted and "mounted" or "unmounted")
+        }, true)
+    end
+end
+
+do
+    -- add filesystem addons in /addons/
+    local _, fileSystemAddonDirectories = file.Find("addons/*", "GAME")
+
+    -- check gma first
+    for name, addon in pairs(fileSystemAddonDirectories) do
+        -- check if addon contains "lua" folder
+        if not file.Exists("addons/" .. addon .. "/lua", "GAME") then continue end
+        local addoninfo = {}
+
+        -- addon.txt is not required, but if it exists, we can get the name, author and version from it
+        if file.Exists("addons/" .. addon .. "/addon.txt", "GAME") then
+            -- i decided to not use util.KeyValuesToTable because it tries to convert values to numbers if possible
+            -- this breaks stuff like 3.2 as it has rounding errors when converting to a number
+            local addontxt = file.Open("addons/" .. addon .. "/addon.txt", "r", "GAME")
+            local addonData = {}
+            local i = 0 -- just to be safe, dont want to get stuck in an infinite loop
+
+            while true do
+                if i > 100 then break end -- just to be safe
+                i = i + 1
+                local line = addontxt:ReadLine()
+                if not line then break end
+                -- check if line is a comment
+                if string.StartWith(string.Trim(line), "#") then continue end
+                if string.StartWith(string.Trim(line), "//") then continue end
+                -- get key and value
+                local key, value = string.match(line, "\"([^\"]+)\"%s+\"([^\"]+)\"")
+                if not key or not value then continue end
+                -- add to table
+                addonData[key] = value
+            end
+
+            addontxt:Close()
+
+            addoninfo = {
+                name = addonData.name,
+                author = addonData.author_name,
+                version = addonData.version
+            }
+        end
+
+        -- check if addon is using libgmodstore
+        if libgmodstoreAddons[addon] then
+            addoninfo.id = libgmodstoreAddons[addon].script_id
+            addoninfo.name = libgmodstoreAddons[addon].script_name
+            addoninfo.author = libgmodstoreAddons[addon].options.author_name
+            addoninfo.version = libgmodstoreAddons[addon].options.version
+            addoninfo.type = "gmodstore"
+        end
+
+        -- get info from git if it exists
+        -- This will overwrite the informations we got from addon.txt, but git should be more accurate
+        if file.Exists("addons/" .. addon .. "/.git/HEAD", "GAME") then
+            local gitHead = file.Open("addons/" .. addon .. "/.git/HEAD", "r", "GAME")
+            local branch = gitHead:ReadLine()
+            gitHead:Close()
+
+            if string.StartWith(branch, "ref: refs/heads/") then
+                addoninfo.branch = string.sub(branch, 17):Trim()
+                addoninfo.type = "git"
+            end
+
+            if addoninfo.branch and file.Exists("addons/" .. addon .. "/.git/refs/heads/" .. addoninfo.branch, "GAME") then
+                local gitHead = file.Open("addons/" .. addon .. "/.git/refs/heads/" .. addoninfo.branch, "r", "GAME")
+                addoninfo.version = gitHead:ReadLine():Trim()
+                gitHead:Close()
+            end
+        end
+
+        if addoninfo.name then
+            logDebug("Found FileSystem addon: %s (%s)", addoninfo.name or addon, addon)
+        else
+            logDebug("Found FileSystem addon: %s", addon)
+        end
+
+        LogUploader.Register(addoninfo.name or addon, {
+            itemId = addoninfo.id,
+            type = addoninfo.type or "filesystem",
+            author = addoninfo.author,
+            version = addoninfo.version,
+            branch = addoninfo.branch
+        }, true)
+    end
+
+    -- cleanup
+    libgmodstoreAddons = nil
+end
+
+do
+    -- check lua modules
+    local moduleAddons, _ = file.Find("lua/bin/*", "GAME")
+
+    for name, addon in pairs(moduleAddons) do
+        -- check if file is a module (ends with .dll or .so)
+        if not string.EndsWith(addon, ".dll") and not string.EndsWith(addon, ".so") then continue end
+        logDebug("Found Module addon: %s", addon)
+
+        LogUploader.Register(addon, {
+            type = "module"
+        }, true)
+    end
 end
 
 -- generate output
