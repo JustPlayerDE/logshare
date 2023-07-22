@@ -75,6 +75,13 @@ local typeDefaultBranch = {
     ["git"] = "master"
 }
 
+local mergedTypes = {
+    ["workshop_mounted"] = "workshop",
+    ["workshop_unmounted"] = "workshop",
+    ["gmodstore"] = "filesystem",
+    ["git"] = "filesystem"
+}
+
 LogUploader.Register = function(name, data, no_log)
     local addonData = {
         name = name,
@@ -89,10 +96,17 @@ LogUploader.Register = function(name, data, no_log)
         logDebug("Found Supported addon: %s, version: %s, branch: %s, type: %s", addonData.name, addonData.version, addonData.branch, addonData.type)
     end
 
-    if not LogUploader.Addons then LogUploader.Addons = {} end
-    if not LogUploader.Addons[addonData.type] then LogUploader.Addons[addonData.type] = {} end
     local addonType = addonData.type
-    addonData.type = nil -- remove type from addonData, we dont need it anymore and it would just waste space
+    
+    if mergedTypes[addonType] then
+        addonType = mergedTypes[addonData.type]
+    else
+        addonData.type = nil
+    end
+
+    if not LogUploader.Addons then LogUploader.Addons = {} end
+    if not LogUploader.Addons[addonType] then LogUploader.Addons[addonType] = {} end
+
 
     -- set anything [unknown] to nil
     for k, v in pairs(addonData) do
