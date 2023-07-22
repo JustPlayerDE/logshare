@@ -94,6 +94,13 @@ LogUploader.Register = function(name, data, no_log)
     local addonType = addonData.type
     addonData.type = nil -- remove type from addonData, we dont need it anymore and it would just waste space
 
+    -- set anything [unknown] to nil
+    for k, v in pairs(addonData) do
+        if v == "[unknown]" then
+            addonData[k] = nil
+        end
+    end
+
     table.insert(LogUploader.Addons[addonType], addonData)
 end
 
