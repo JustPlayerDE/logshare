@@ -348,9 +348,10 @@ function LogUploader.Init()
     end)
 end
 
-if string.find(debug.getinfo(1, "S").source, "@lua_run") then
-    -- we are run via console, automatically run LogUploader.Init after 5 seconds
-    log("Waiting 5 seconds...")
-    timer.Simple(5, LogUploader.Init)
-end
+-- we are run via console, automatically run LogUploader.Init after 5 seconds
 -- otherwise we are loaded for libgmodstore, wait for user to call log uploader.
+if not string.find(debug.getinfo(1, "S").source, "@lua_run") then return end
+log("Waiting 5 seconds...")
+timer.Simple(5, function()
+    LogUploader.Init()
+end)
