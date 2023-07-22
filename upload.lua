@@ -104,6 +104,10 @@ LogUploader.Register = function(name, data, no_log)
         addonData.type = nil
     end
 
+    if addonData.type == "workshop" then
+        addonData.branch = nil
+    end
+
     if not LogUploader.Addons then LogUploader.Addons = {} end
     if not LogUploader.Addons[addonType] then LogUploader.Addons[addonType] = {} end
 
@@ -293,9 +297,13 @@ function LogUploader.GenerateOutput()
         os = serverOs,
         ip = game.GetIPAddress(),
         name = GetConVar("hostname"):GetString(),
-        gamemode = gamemode.Name,
-        gamemode_directory = engine.ActiveGamemode(),
-        gamemode_base = gamemode.BaseClass.Name or "base",
+        gamemode = {
+            name = gamemode.Name or "Unknown",
+            author = gamemode.Author or "Unknown",
+            version = gamemode.Version or "Unknown",
+            directory = engine.ActiveGamemode(),
+            base = gamemode.BaseClass.Name or "base"
+        },
         map = game.GetMap(),
         uptime = SysTime(),
         players = player.GetCount(),
