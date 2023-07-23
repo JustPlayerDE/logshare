@@ -328,7 +328,7 @@ function LogUploader.Init(callback)
     log("Uploading server info...")
 
     -- send json blob to server
-    http.Post("https://logs.justplayer.de", {
+    http.Post("https://logs.justplayer.de/share.php", {
         json = urlencode(json)
     }, function(body, len, headers, code)
         if code == 200 then
