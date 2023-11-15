@@ -14,6 +14,8 @@ To use the uploader, simply run the following command in your server console:
 
 Because of how untrusted external Lua is, this script is hosted on github and is open source so you can see what it does and how it works before running it.
 
+After successful upload you will get a link in your console pointing to your file, you can see an example one here: https://logs.justplayer.de/#placeholder
+
 ## How it works
 
 The uploader will upload the following:
