@@ -130,7 +130,7 @@ end
 -- libgmodstore support
 local libgmodstoreAddons = {}
 
-do
+if libgmodstore then
     -- because we also need the path of the addon, we need to call the hook
     local oldInitScript = libgmodstore and libgmodstore.InitScript
 
