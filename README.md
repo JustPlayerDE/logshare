@@ -20,7 +20,7 @@ After successful upload you will get a link in your console pointing to your fil
 
 The uploader will upload the following:
 
-* ~~The server log file (if it exists: `garrysmod/console.log`)~~ (not yet)
+* ~~The server log file (if it exists: `garrysmod/console.log`)~~ (not possible since rubat blocks them now)
 * Server Meta Data
   * Server OS
   * Server Name
